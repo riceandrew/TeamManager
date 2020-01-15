@@ -137,22 +137,39 @@ function addEmployee() {
 }
 // function to remove employees from database
 function removeEmployee() {
-    inquirer
-        .prompt([
-        {
-            name: "firstname",
-            type: "input", 
-            message: "Which employee would you like to remove?",
-        }
-        ])
-        .then(function(remove){
-            connection.query(
-                "DELETE FROM employees WHERE first_name = ? ",
-                {first_name: remove.firstname,
+    connection.query('SELECT * FROM employees', function (err, res) {
+        if (err) throw err;
+        var empList = [];
+        for (var i = 0; i < res.length; i++) {
+            empList.push(res[i].first_name);
+        };
+        console.log(empList);
+        inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "removeEmp",
+                    message: "Which employee would you like to remove?",
+                    choices: empList,
+                    
                 }
-            )
-        })
-}
+            ])
+            .then(data => {
+                connection.query(
+                    `DELETE FROM employees
+                    WHERE first_name = "${data.removeEmp}";`
+                    
+                    , function (err, res) {
+                        if (err) throw err;
+                        console.log("Here is the updated employees");
+                        start()
+                        
+                    }
+                )
+            })
+    }
+    )}
+
 // function to update a role of existing employee
 function updateRole() {
 
